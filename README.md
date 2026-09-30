@@ -1,29 +1,38 @@
-# Welcome to your Lovable project
+# EdSync — Offline-First Personalized Learning Platform
 
-This project was built with [Lovable](https://lovable.dev).
+EdSync is a modern, offline-first educational platform engineered by developers to empower students with uninterrupted learning regardless of internet connectivity.
 
-## Build with Lovable
+## ✨ Core Features
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+- **Offline-First Architecture:** Complete IndexedDB local cache for textbooks, study materials, notes, and progress.
+- **AI Study Buddy:** Hybrid AI assistant delivering step-by-step academic explanations, formula breakdowns, and practice quiz questions.
+- **Personalized Syllabus:** Strict board and state curriculum alignment (CBSE, ICSE, State Boards).
+- **Career Navigator:** Skill trees, project roadmaps, and higher-study options across STEM, Commerce, and Humanities.
+- **Progress Analytics:** Interactive charts for weekly study time, streaks, and syllabus mastery.
+- **Verified Opportunities:** Up-to-date scholarships, fellowships, and internships sourced directly from official government portals.
+- **Mentorship Hub:** 1-on-1 guidance request system connecting students with experienced educators and researchers.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+## 🛠️ Tech Stack
 
-## Development
+- **Framework:** TanStack Start / React 19 / TypeScript
+- **Styling:** Tailwind CSS (v4) with custom academic design system
+- **Routing:** TanStack Router (File-based routing)
+- **State & Cache:** TanStack React Query + IndexedDB (`idb`)
+- **Visuals & Charts:** Recharts + Lucide Icons
+- **AI Integration:** Groq SDK (`llama-3.3-70b-versatile`) + Local Knowledge Base Fallback
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## 🚀 Getting Started
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+```bash
+# Install dependencies
+npm install
+
+# Start local development server
 npm run dev
+
+# Build for production
+npm run build
 ```
 
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+---
+*Built with ❤️ by Developers for Students everywhere.*

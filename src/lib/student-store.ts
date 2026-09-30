@@ -8,7 +8,6 @@ export type StudentProfile = {
   state: string | null;
   school: string;
   subjects: string[];
-  isDemo: boolean;
   createdAt: string;
 };
 
@@ -23,17 +22,6 @@ export type StudyState = {
 
 const PROFILE_KEY = "edsync.profile";
 const STUDY_KEY = "edsync.study";
-
-export const DEMO_PROFILE: StudentProfile = {
-  name: "Demo Student",
-  classLevel: "12",
-  board: "cbse",
-  state: null,
-  school: "Demo Senior Secondary School",
-  subjects: ["Biology", "Chemistry", "Physics"],
-  isDemo: true,
-  createdAt: new Date().toISOString(),
-};
 
 export const EMPTY_STUDY: StudyState = {
   completedChapters: [],
@@ -74,6 +62,18 @@ export function loadStudy() {
 
 export function saveStudy(state: StudyState) {
   write(STUDY_KEY, state);
+}
+
+export function logStudyMinutes(dateIso: string, minutes: number) {
+  const current = loadStudy();
+  const existing = current.studyMinutes[dateIso] ?? 0;
+  saveStudy({
+    ...current,
+    studyMinutes: {
+      ...current.studyMinutes,
+      [dateIso]: existing + minutes,
+    },
+  });
 }
 
 export function resetAll() {

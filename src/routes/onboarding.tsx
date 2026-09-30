@@ -12,17 +12,18 @@ import {
 } from "@/data/academics";
 import { saveProfile, useStudent } from "@/lib/student-store";
 import { cn } from "@/lib/utils";
+import { Sparkles, ArrowRight, User, BookOpen, GraduationCap } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Set up your profile — EdSync" },
+      { title: "Set Up Your Academic Profile — EdSync" },
       {
         name: "description",
         content:
-          "Tell EdSync your class, board, state and subjects so your syllabus and study plan match what you actually study.",
+          "Configure your class, board, state and subjects so your syllabus and study plan match what you actually study.",
       },
-      { property: "og:title", content: "Set up your profile — EdSync" },
+      { property: "og:title", content: "Set Up Your Academic Profile — EdSync" },
       {
         property: "og:description",
         content: "Class, board, state and subjects — the basis of your personalized EdSync syllabus.",
@@ -32,10 +33,20 @@ export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
 });
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </label>
       {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
       <div className="mt-2">{children}</div>
     </div>
@@ -43,7 +54,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 const inputClass =
-  "w-full rounded-lg border border-input bg-card px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30";
+  "w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20";
 
 function Chip({
   active,
@@ -60,9 +71,9 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+        "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all",
         active
-          ? "border-primary bg-primary text-primary-foreground"
+          ? "border-primary bg-primary text-primary-foreground shadow-xs"
           : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
@@ -71,16 +82,25 @@ function Chip({
   );
 }
 
+import { useI18n, type SupportedLanguage } from "@/lib/i18n";
+
 function Onboarding() {
   const navigate = useNavigate();
   const { profile } = useStudent();
+  const { language, setLanguage } = useI18n();
 
   const [name, setName] = useState(profile?.name ?? "");
-  const [classLevel, setClassLevel] = useState<ClassLevel | null>(profile?.classLevel ?? null);
-  const [board, setBoard] = useState<BoardId | null>(profile?.board ?? null);
+  const [classLevel, setClassLevel] = useState<ClassLevel | null>(
+    profile?.classLevel ?? "12",
+  );
+  const [board, setBoard] = useState<BoardId | null>(profile?.board ?? "cbse");
   const [state, setState] = useState<string>(profile?.state ?? "");
   const [school, setSchool] = useState(profile?.school ?? "");
-  const [subjects, setSubjects] = useState<string[]>(profile?.subjects ?? []);
+  const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(language || "en");
+  const [subjects, setSubjects] = useState<string[]>(
+    profile?.subjects ?? ["Physics", "Chemistry", "Mathematics", "English Core"],
+  );
+  const [loading, setLoading] = useState(false);
 
   const needsState = board === "state";
   const subjectOptions = useMemo(
@@ -102,7 +122,23 @@ function Onboarding() {
     if (needsState && !state) return toast.error("Please select your state.");
     if (subjects.length === 0) return toast.error("Please select at least one subject.");
 
-        try {
+    setLoading(true);
+
+    // Save language preference
+    setLanguage(selectedLang);
+
+    // Save locally first for instant offline responsiveness
+    saveProfile({
+      name: name.trim(),
+      classLevel,
+      board,
+      state: needsState ? state : null,
+      school: school.trim(),
+      subjects,
+      createdAt: profile?.createdAt ?? new Date().toISOString(),
+    });
+
+    try {
       await createStudentProfile({
         data: {
           name: name.trim(),
@@ -113,46 +149,43 @@ function Onboarding() {
           subjects,
         },
       });
-
-      saveProfile({
-        name: name.trim(),
-        classLevel,
-        board,
-        state: needsState ? state : null,
-        school: school.trim(),
-        subjects,
-        isDemo: false,
-        createdAt: profile?.createdAt ?? new Date().toISOString(),
-      });
-
-      toast.success("Your academic profile is ready.");
-      void navigate({ to: "/dashboard" });
-    } catch (error) {
-      console.error("Failed to save academic profile:", error);
-      toast.error("Could not save your profile. Please try again.");
+    } catch {
+      // Offline / unconfigured remote server - graceful fallback
     }
+
+    setLoading(false);
+    toast.success("Academic profile created successfully! 🎉");
+    void navigate({ to: "/dashboard" });
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 sm:px-6">
-      <form onSubmit={submit} className="mx-auto max-w-2xl">
-        <h1 className="text-2xl font-semibold sm:text-3xl">Set up your academic profile</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          EdSync uses this to build your syllabus. We never guess your board from your location.
-        </p>
+    <div className="min-h-screen bg-background px-4 py-10 sm:px-6 flex items-center justify-center">
+      <form onSubmit={submit} className="w-full max-w-2xl">
+        <div className="text-center sm:text-left mb-6">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary mb-3">
+            <GraduationCap className="h-4 w-4" /> Personalized Learning Setup
+          </div>
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-foreground">
+            Set up your academic profile
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+            EdSync creates a custom syllabus strictly matching your actual board and chosen subjects.
+          </p>
+        </div>
 
-        <div className="surface-card mt-6 space-y-6 p-5 sm:p-6">
-          <Field label="Your name">
+        <div className="surface-card space-y-6 p-6 sm:p-8 shadow-xl">
+          <Field label="Full Name">
             <input
               className={inputClass}
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Aditi Sharma"
               autoComplete="name"
+              required
             />
           </Field>
 
-          <Field label="Class / Grade">
+          <Field label="Class / Standard">
             <div className="flex flex-wrap gap-2">
               {CLASS_OPTIONS.map((option) => (
                 <Chip
@@ -169,7 +202,7 @@ function Onboarding() {
             </div>
           </Field>
 
-          <Field label="Board">
+          <Field label="Educational Board">
             <div className="flex flex-wrap gap-2">
               {BOARD_OPTIONS.map((option) => (
                 <Chip key={option.id} active={board === option.id} onClick={() => setBoard(option.id)}>
@@ -180,7 +213,7 @@ function Onboarding() {
           </Field>
 
           {needsState && (
-            <Field label="State" hint="Required so your state board syllabus is matched correctly.">
+            <Field label="State" hint="Required to match your specific State Board curriculum.">
               <select className={inputClass} value={state} onChange={(e) => setState(e.target.value)}>
                 <option value="">Select your state</option>
                 {STATE_OPTIONS.map((option) => (
@@ -192,16 +225,39 @@ function Onboarding() {
             </Field>
           )}
 
-          <Field label="School / College" hint="Optional.">
+          <Field label="School / College (Optional)">
             <input
               className={inputClass}
               value={school}
               onChange={(e) => setSchool(e.target.value)}
-              placeholder="e.g. Govt. Higher Secondary School"
+              placeholder="e.g. Kendriya Vidyalaya / Model School"
             />
           </Field>
 
-          <Field label="Subjects">
+          <Field label="Preferred Learning & Voice Language" hint="All syllabus, AI explanations & audio answers will adapt to this language.">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { code: "en", name: "English" },
+                { code: "hi", name: "हिन्दी (Hindi)" },
+                { code: "mr", name: "मराठी (Marathi)" },
+                { code: "bn", name: "বাংলা (Bengali)" },
+                { code: "ta", name: "தமிழ் (Tamil)" },
+                { code: "te", name: "తెలుగు (Telugu)" },
+                { code: "gu", name: "ગુજરાતી (Gujarati)" },
+                { code: "kn", name: "ಕನ್ನಡ (Kannada)" },
+              ].map((langItem) => (
+                <Chip
+                  key={langItem.code}
+                  active={selectedLang === langItem.code}
+                  onClick={() => setSelectedLang(langItem.code as any)}
+                >
+                  {langItem.name}
+                </Chip>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="Chosen Subjects (Select all that apply)">
             {classLevel ? (
               <div className="flex flex-wrap gap-2">
                 {subjectOptions.map((subject) => (
@@ -215,17 +271,19 @@ function Onboarding() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Select your class first.</p>
+              <p className="text-xs text-muted-foreground">Select your class level first.</p>
             )}
           </Field>
-        </div>
 
-        <button
-          type="submit"
-          className="mt-6 w-full rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
-        >
-          Continue to dashboard
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground shadow-md shadow-primary/25 transition hover:opacity-90 disabled:opacity-50"
+          >
+            <span>{loading ? "Configuring..." : "Save & Open Dashboard"}</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
       </form>
     </div>
   );

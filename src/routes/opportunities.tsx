@@ -1,12 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-
+import { AppShell } from "@/components/app-shell";
 import {
   opportunities,
   type OpportunityType,
 } from "@/data/opportunities";
+import {
+  Briefcase,
+  Search,
+  ExternalLink,
+  ShieldCheck,
+  Bookmark,
+  Calendar,
+  Building2,
+  Sparkles,
+} from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/opportunities")({
+  head: () => ({
+    meta: [
+      { title: "Student Opportunities & Scholarships — EdSync" },
+      {
+        name: "description",
+        content:
+          "Discover verified government scholarships, internships, fellowships, competitions and student funding schemes from official sources.",
+      },
+    ],
+  }),
   component: OpportunitiesPage,
 });
 
@@ -22,16 +43,35 @@ const filters: Array<"All" | OpportunityType> = [
 
 function OpportunitiesPage() {
   const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] =
-    useState<"All" | OpportunityType>("All");
+  const [activeFilter, setActiveFilter] = useState<"All" | OpportunityType>("All");
+  const [savedIds, setSavedIds] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem("edsync_saved_opps") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  function toggleSave(title: string) {
+    let next: string[];
+    if (savedIds.includes(title)) {
+      next = savedIds.filter((id) => id !== title);
+      toast.info("Opportunity removed from saved list.");
+    } else {
+      next = [...savedIds, title];
+      toast.success("Opportunity bookmarked!");
+    }
+    setSavedIds(next);
+    localStorage.setItem("edsync_saved_opps", JSON.stringify(next));
+  }
 
   const filteredOpportunities = useMemo(() => {
     const query = search.trim().toLowerCase();
 
     return opportunities.filter((opportunity) => {
       const matchesFilter =
-        activeFilter === "All" ||
-        opportunity.type === activeFilter;
+        activeFilter === "All" || opportunity.type === activeFilter;
 
       const matchesSearch =
         query.length === 0 ||
@@ -45,232 +85,157 @@ function OpportunitiesPage() {
   }, [search, activeFilter]);
 
   return (
-    <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-
-        {/* Header */}
-        <div className="mb-8">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-primary">
-            Student Opportunities
-          </p>
-
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Opportunities for You
-          </h1>
-
-          <p className="mt-3 max-w-3xl text-muted-foreground">
-            Discover scholarships, internships, fellowships, government
-            schemes, competitions and learning programs from official sources.
-          </p>
-        </div>
-
-        {/* Search */}
-        <div className="mb-6">
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search opportunities..."
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-primary"
-          />
-        </div>
-
-        {/* Category filters */}
-        <div className="mb-8 flex gap-2 overflow-x-auto pb-2">
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              type="button"
-              onClick={() => setActiveFilter(filter)}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
-                activeFilter === filter
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-background hover:bg-muted"
-              }`}
-            >
-              {filter === "All"
-                ? "All"
-                : filter === "Government Scheme"
-                  ? "Government Schemes"
-                  : filter === "Learning Program"
-                    ? "Learning Programs"
-                    : `${filter}s`}
-            </button>
-          ))}
-        </div>
-
-        {/* Result count */}
-        <div className="mb-5">
-          <p className="text-sm text-muted-foreground">
-            Showing{" "}
-            <span className="font-semibold text-foreground">
-              {filteredOpportunities.length}
-            </span>{" "}
-            opportunit
-            {filteredOpportunities.length === 1 ? "y" : "ies"}
-          </p>
-        </div>
-
-        {/* Cards */}
-        {filteredOpportunities.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {filteredOpportunities.map((opportunity) => (
-              <OpportunityCard
-                key={`${opportunity.title}-${opportunity.sourceName}`}
-                opportunity={opportunity}
+    <AppShell
+      title="Student Opportunities"
+      description="Verified government scholarships, fellowships, internships & learning programs"
+    >
+      <div className="space-y-6">
+        {/* Top Filter & Search */}
+        <section className="surface-card p-6">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search scholarships, eligibility, schemes (e.g. NSP, AICTE)..."
+                className="w-full rounded-xl border border-input bg-background py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <span>Direct official portal links only</span>
+            </div>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setActiveFilter(filter)}
+                className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                  activeFilter === filter
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {filter === "All"
+                  ? "All Categories"
+                  : filter === "Government Scheme"
+                    ? "Government Schemes"
+                    : filter === "Learning Program"
+                      ? "Learning Programs"
+                      : `${filter}s`}
+              </button>
             ))}
           </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-            <h2 className="text-xl font-semibold">
-              No opportunities found
-            </h2>
+        </section>
 
-            <p className="mt-2 text-sm text-muted-foreground">
-              Try another search term or category.
+        {/* Opportunity Cards */}
+        {filteredOpportunities.length > 0 ? (
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {filteredOpportunities.map((opportunity) => {
+              const isSaved = savedIds.includes(opportunity.title);
+              return (
+                <article
+                  key={`${opportunity.title}-${opportunity.sourceName}`}
+                  className="surface-card-hover flex h-full flex-col justify-between p-6 transition"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
+                        {opportunity.type}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => toggleSave(opportunity.title)}
+                        aria-label="Bookmark opportunity"
+                        className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-primary transition"
+                      >
+                        <Bookmark
+                          className={`h-4 w-4 ${isSaved ? "fill-primary text-primary" : ""}`}
+                        />
+                      </button>
+                    </div>
+
+                    <h3 className="text-base font-bold leading-snug text-foreground">
+                      {opportunity.title}
+                    </h3>
+
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Building2 className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{opportunity.organization}</span>
+                    </div>
+
+                    <div className="mt-4 rounded-xl bg-muted/40 p-3 text-xs leading-relaxed">
+                      <p className="font-semibold text-foreground mb-0.5">Eligibility:</p>
+                      <p className="text-muted-foreground">{opportunity.eligibility}</p>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5 text-amber-500" />
+                        <span>Deadline: {opportunity.deadline}</span>
+                      </span>
+                      <span>Source: {opportunity.sourceName}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 border-t border-border pt-4">
+                    <a
+                      href={opportunity.officialUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-center text-xs font-bold text-primary-foreground transition hover:opacity-90 shadow-xs"
+                    >
+                      <span>Apply on Official Portal</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="surface-card p-12 text-center">
+            <Briefcase className="mx-auto h-10 w-10 text-muted-foreground" />
+            <h3 className="mt-3 font-semibold">No opportunities matched your query</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Try searching for a different keyword or resetting filters.
             </p>
           </div>
         )}
 
-        {/* Official sources */}
-        <section className="mt-12 rounded-2xl border border-border bg-muted/30 p-6">
-          <h2 className="text-lg font-semibold">
-            Official Opportunity Sources
-          </h2>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            EdSync uses official portals as the source for opportunity
-            discovery. Always verify the latest eligibility and deadline before
-            applying.
-          </p>
-
-          <div className="mt-5 flex flex-wrap gap-3">
-            <OfficialSource
-              name="National Scholarship Portal"
-              url="https://scholarships.gov.in/"
-            />
-
-            <OfficialSource
-              name="AICTE Internship Portal"
-              url="https://internship.aicte-india.org/"
-            />
-
-            <OfficialSource
-              name="Common Fellowship Portal"
-              url="https://www.fellowships.gov.in/"
-            />
-
-            <OfficialSource
-              name="myScheme"
-              url="https://www.myscheme.gov.in/"
-            />
+        {/* Verified Portals Box */}
+        <section className="surface-card p-6 border-dashed">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            Trusted Government Portals
+          </h3>
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            {[
+              { name: "National Scholarship Portal", url: "https://scholarships.gov.in/" },
+              { name: "AICTE Internship Portal", url: "https://internship.aicte-india.org/" },
+              { name: "Common Fellowship Portal", url: "https://www.fellowships.gov.in/" },
+              { name: "myScheme Portal", url: "https://www.myscheme.gov.in/" },
+            ].map((p) => (
+              <a
+                key={p.name}
+                href={p.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition"
+              >
+                <span>{p.name}</span>
+                <ExternalLink className="h-3 w-3 text-muted-foreground" />
+              </a>
+            ))}
           </div>
         </section>
-
-        {/* Disclaimer */}
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          EdSync is an independent student-support platform. It is not an
-          official government portal and does not process applications on
-          behalf of government organizations.
-        </p>
       </div>
-    </main>
-  );
-}
-
-function OpportunityCard({
-  opportunity,
-}: {
-  opportunity: (typeof opportunities)[number];
-}) {
-  return (
-    <article className="flex h-full flex-col rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:shadow-md">
-
-      {/* Category + verification */}
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-          {opportunity.type}
-        </span>
-
-        <span className="text-xs font-medium text-muted-foreground">
-          ✓ Official source
-        </span>
-      </div>
-
-      {/* Title */}
-      <h2 className="text-lg font-semibold leading-snug">
-        {opportunity.title}
-      </h2>
-
-      {/* Organization */}
-      <p className="mt-2 text-sm text-muted-foreground">
-        {opportunity.organization}
-      </p>
-
-      {/* Eligibility */}
-      <div className="mt-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Eligibility
-        </p>
-
-        <p className="mt-1 text-sm leading-relaxed">
-          {opportunity.eligibility}
-        </p>
-      </div>
-
-      {/* Deadline */}
-      <div className="mt-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Deadline
-        </p>
-
-        <p className="mt-1 text-sm font-medium">
-          {opportunity.deadline}
-        </p>
-      </div>
-
-      {/* Source */}
-      <div className="mt-4 space-y-1">
-        <p className="text-xs text-muted-foreground">
-          Source: {opportunity.sourceName}
-        </p>
-
-        <p className="text-xs text-muted-foreground">
-          Last verified: {opportunity.lastVerified}
-        </p>
-      </div>
-
-      {/* CTA */}
-      <div className="mt-auto pt-6">
-        <a
-          href={opportunity.officialUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground transition hover:opacity-90"
-        >
-          Visit Official Source
-        </a>
-      </div>
-    </article>
-  );
-}
-
-function OfficialSource({
-  name,
-  url,
-}: {
-  name: string;
-  url: string;
-}) {
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium transition hover:bg-muted"
-    >
-      {name}
-    </a>
+    </AppShell>
   );
 }

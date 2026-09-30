@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getDrizzle } from "../db";
 import { academicProfiles, studentProfiles } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 export const createStudentProfile = createServerFn({ method: "POST" })
   .validator(
@@ -25,6 +26,10 @@ export const createStudentProfile = createServerFn({ method: "POST" })
       })
       .returning();
 
+    if (!student) {
+      throw new Error("Failed to create student profile.");
+    }
+
     await db.insert(academicProfiles).values({
       studentId: student.id,
       classLevel: data.classLevel,
@@ -39,7 +44,7 @@ export const createStudentProfile = createServerFn({ method: "POST" })
       studentId: student.id,
     };
   });
-import { eq } from "drizzle-orm";
+
 export const getStudentProfile = createServerFn({ method: "GET" })
   .validator((data: { studentId: string }) => data)
   .handler(async ({ data }) => {
