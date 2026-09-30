@@ -265,6 +265,8 @@ export const askEdSyncAI = createServerFn({
   .handler(async ({ data }) => {
     const apiKey =
       data.apiKey ||
+      process.env["AI_API_KEY"] ||
+      process.env["VITE_AI_API_KEY"] ||
       process.env["GROQ_API_KEY"] ||
       process.env["VITE_GROQ_API_KEY"] ||
       "";

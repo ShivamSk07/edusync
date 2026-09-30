@@ -18,7 +18,7 @@
 - [ ] PWA + service worker, IndexedDB, sync queue, connectivity states
 
 ## Phase 4
-- [ ] Secure Groq AI Study Buddy (GROQ_API_KEY as server secret), aiService abstraction
+- [ ] Secure EdSync AI Study Buddy (API key server-side proxy), aiService abstraction
 
 ## Phase 5
 - [ ] Opportunities (verified only), Career Navigator

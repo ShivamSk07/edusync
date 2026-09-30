@@ -19,12 +19,32 @@ EdSync is a modern, offline-first educational platform engineered by developers 
 - **Routing:** TanStack Router (File-based routing)
 - **State & Cache:** TanStack React Query + IndexedDB (`idb`)
 - **Visuals & Charts:** Recharts + Lucide Icons
-- **AI Integration:** Groq SDK (`llama-3.3-70b-versatile`) + Local Knowledge Base Fallback
+- **AI Integration:** Hybrid EdSync AI Engine (Adaptive Academic Assistant) + Offline Knowledge Base Fallback
 
 ## 🚀 Getting Started
 
+Follow these steps to run EdSync locally:
+
+### 1. Clone & Enter Project Directory
 ```bash
-# Install dependencies
+# Clone the repository
+git clone https://github.com/ShivamSk07/edusync.git
+
+# IMPORTANT: Always navigate into the repository folder before running npm commands
+cd edusync
+```
+
+### 2. Environment Configuration
+```bash
+# Copy example environment variables
+cp .env.example .env.local
+# On Windows Command Prompt:
+# copy .env.example .env.local
+```
+
+### 3. Install Dependencies & Start
+```bash
+# Install all packages
 npm install
 
 # Start local development server
@@ -32,6 +52,21 @@ npm run dev
 
 # Build for production
 npm run build
+```
+
+## 🔄 Updating to Latest Version
+
+If you have already cloned the repository and want to get the latest updates:
+
+```bash
+# Fetch latest commits
+git pull origin main
+
+# Install any updated dependencies
+npm install
+
+# Restart the dev server
+npm run dev
 ```
 
 ---
