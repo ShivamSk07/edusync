@@ -120,11 +120,10 @@ function AIStudyBuddy() {
   const [customKey, setCustomKey] = useState("");
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [keyInputDraft, setKeyInputDraft] = useState("");
-  const [activeModelName, setActiveModelName] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("edsync_user_groq_api_key") || "";
+      const stored = localStorage.getItem("edsync_custom_ai_key") || "";
       setCustomKey(stored);
       setKeyInputDraft(stored);
     }
@@ -320,10 +319,6 @@ function AIStudyBuddy() {
         },
       });
 
-      if (result.modelUsed) {
-        setActiveModelName(result.modelUsed);
-      }
-
       const aiMsg: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
@@ -440,11 +435,11 @@ function AIStudyBuddy() {
                 setShowKeyModal(true);
               }}
               className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:border-primary/50 hover:text-foreground transition shadow-2xs"
-              title="Groq AI Engine Settings"
+              title="EdSync AI Engine Settings"
             >
-              <Zap className="h-3.5 w-3.5 text-amber-500" />
+              <Zap className="h-3.5 w-3.5 text-primary" />
               <span className="hidden md:inline">
-                {customKey ? "Custom Groq Key" : "Groq AI Active"}
+                {customKey ? "Custom Key Active" : "EdSync AI Active"}
               </span>
             </button>
 
@@ -532,19 +527,15 @@ function AIStudyBuddy() {
                           <div className="flex flex-wrap items-center gap-1.5 font-bold text-primary">
                             <Bot className="h-3.5 w-3.5" />
                             <span>EdSync Academic Tutor</span>
-                            {message.modelUsed && (
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide ${
-                                  message.isOffline
-                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                                    : "bg-primary/10 text-primary border border-primary/20"
-                                }`}
-                              >
-                                {message.isOffline
-                                  ? "Offline Curriculum Note"
-                                  : `⚡ Groq (${message.modelUsed.replace("openai/", "").replace("qwen/", "").replace("meta-llama/", "")})`}
-                              </span>
-                            )}
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide ${
+                                message.isOffline
+                                  ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                                  : "bg-primary/10 text-primary border border-primary/20"
+                              }`}
+                            >
+                              {message.isOffline ? "Offline Curriculum Note" : "⚡ EdSync AI"}
+                            </span>
                           </div>
 
                           <div className="flex items-center gap-2">
@@ -743,19 +734,19 @@ function AIStudyBuddy() {
           </form>
         </div>
 
-        {/* Groq AI Settings Modal */}
+        {/* EdSync AI Settings Modal */}
         {showKeyModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in duration-150">
             <div className="surface-card w-full max-w-md rounded-2xl border border-border p-6 shadow-xl">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-amber-500/10 text-amber-500">
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
                     <Zap className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-foreground text-sm">Groq AI Engine Settings</h3>
+                    <h3 className="font-bold text-foreground text-sm">EdSync AI Settings</h3>
                     <p className="text-[11px] text-muted-foreground">
-                      Powered by ultra-fast Groq Llama 3 / Qwen inference
+                      Academic AI Intelligence Engine
                     </p>
                   </div>
                 </div>
@@ -777,78 +768,58 @@ function AIStudyBuddy() {
                       Active & Connected
                     </span>
                   </div>
-                  {activeModelName && (
-                    <div className="mt-2 flex items-center justify-between text-muted-foreground">
-                      <span>Active Model:</span>
-                      <span className="font-mono font-medium text-foreground">
-                        {activeModelName}
-                      </span>
-                    </div>
-                  )}
                 </div>
 
                 <div>
                   <label className="block font-semibold text-foreground mb-1">
-                    Custom Groq API Key (Optional)
+                    Custom AI API Key (Optional)
                   </label>
                   <p className="text-[11px] text-muted-foreground mb-2">
-                    EdSync provides a shared key by default. You can also paste your personal free API key from Groq Console.
+                    EdSync provides built-in academic intelligence. You can optionally configure your own API key if desired.
                   </p>
                   <input
                     type="password"
                     value={keyInputDraft}
                     onChange={(e) => setKeyInputDraft(e.target.value)}
-                    placeholder="gsk_..."
+                    placeholder="Enter custom API key..."
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 font-mono text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <a
-                    href="https://console.groq.com/keys"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
-                  >
-                    <span>Get free Groq key</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-
-                  <div className="flex items-center gap-2">
-                    {customKey && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          localStorage.removeItem("edsync_user_groq_api_key");
-                          setCustomKey("");
-                          setKeyInputDraft("");
-                          toast.success("Switched back to system default Groq key.");
-                          setShowKeyModal(false);
-                        }}
-                        className="rounded-xl border border-border px-3 py-1.5 font-semibold text-muted-foreground hover:bg-muted text-xs"
-                      >
-                        Reset Default
-                      </button>
-                    )}
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  {customKey && (
                     <button
                       type="button"
                       onClick={() => {
-                        const trimmed = keyInputDraft.trim();
-                        if (trimmed) {
-                          localStorage.setItem("edsync_user_groq_api_key", trimmed);
-                          setCustomKey(trimmed);
-                          toast.success("Custom Groq API key saved successfully! 🚀");
-                        } else {
-                          localStorage.removeItem("edsync_user_groq_api_key");
-                          setCustomKey("");
-                        }
+                        localStorage.removeItem("edsync_custom_ai_key");
+                        setCustomKey("");
+                        setKeyInputDraft("");
+                        toast.success("Switched back to default EdSync AI.");
                         setShowKeyModal(false);
                       }}
-                      className="rounded-xl bg-primary px-4 py-1.5 font-bold text-primary-foreground hover:opacity-90 transition text-xs shadow-xs"
+                      className="rounded-xl border border-border px-3 py-1.5 font-semibold text-muted-foreground hover:bg-muted text-xs"
                     >
-                      Save Key
+                      Reset Default
                     </button>
-                  </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const trimmed = keyInputDraft.trim();
+                      if (trimmed) {
+                        localStorage.setItem("edsync_custom_ai_key", trimmed);
+                        setCustomKey(trimmed);
+                        toast.success("Custom API key saved! 🚀");
+                      } else {
+                        localStorage.removeItem("edsync_custom_ai_key");
+                        setCustomKey("");
+                      }
+                      setShowKeyModal(false);
+                    }}
+                    className="rounded-xl bg-primary px-4 py-1.5 font-bold text-primary-foreground hover:opacity-90 transition text-xs shadow-xs"
+                  >
+                    Save Key
+                  </button>
                 </div>
               </div>
             </div>

@@ -313,7 +313,7 @@ RESPONSE STRUCTURE:
               return {
                 success: true,
                 answer,
-                modelUsed: model,
+                modelUsed: "edsync-ai",
                 isOffline: false,
               };
             }
@@ -351,7 +351,7 @@ RESPONSE STRUCTURE:
           return {
             success: true,
             answer: text.trim(),
-            modelUsed: "pollinations-fallback",
+            modelUsed: "edsync-ai",
             isOffline: false,
           };
         }

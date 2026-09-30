@@ -269,7 +269,7 @@ function CareerAI() {
 
     const userApiKey =
       typeof window !== "undefined"
-        ? localStorage.getItem("edsync_user_groq_api_key") || undefined
+        ? localStorage.getItem("edsync_custom_ai_key") || undefined
         : undefined;
 
     try {
@@ -302,7 +302,7 @@ function CareerAI() {
         <div>
           <h3 className="font-display text-lg font-bold sm:text-xl">Ask Career AI Advisor</h3>
           <p className="text-xs text-muted-foreground">
-            Get personalized advice on learning pathways, prerequisites, and higher studies. Powered by Groq AI.
+            Get personalized advice on learning pathways, prerequisites, and higher studies.
           </p>
         </div>
       </div>
@@ -355,7 +355,7 @@ function CareerAI() {
               <Sparkles className="h-4 w-4" /> Career Advisory
             </span>
             <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-medium text-primary">
-              ⚡ Groq AI
+              ⚡ EdSync AI
             </span>
           </div>
           <div className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
